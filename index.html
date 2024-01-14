@@ -1,148 +1,150 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-CN">
 <head>
-    <meta charset="utf-8">
-    <title>抖音解析-小高网www.xx8g.com</title>
-    <meta name="renderer" content="webkit">
+    <meta charSet="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="Cache-Control" content="no-transform" /> 
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
     <meta name="referrer" content="never">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href="https://cdn.bootcdn.net/ajax/libs/layui/2.7.6/css/layui.min.css" rel="stylesheet">
-    <script src="https://cdn.bootcdn.net/ajax/libs/layui/2.7.6/layui.min.js"></script>
-</head>
-<style>
-body {max-width: 500px;margin: auto;}
-.main {padding:6px 6px;margin:auto;background-color: white;}
-.tt {color: #1aa700;font-size: 1.2rem;font-weight: 700;padding: 8px;}
-.center {text-align: center;}
-</style>
-<body>
-    <div class="main">
-        <blockquote class="layui-elem-quote tt">抖音解析</blockquote>
-        <div class="layui-row">
-            <div class="layui-col-md12">
-                <div class="layui-card-body" id="player" style="display: none;">
-                    <div class="layui-form-item" style="margin: 0 10px 10px 10px;">
-                        <video name="video" id="video" width="100%" controls autoplay loop></video>
-                    </div>
-                </div>
-            </div>
-            <div class="layui-col-md12">
-                <div class="layui-card-body">
-                    <form class="layui-form layui-form-pane" action="">
-                        <div class="layui-form-item layui-form-text">
-                            <label class="layui-form-label">输入分享链接</label>
-                            <div class="layui-input-block">
-                            <textarea name="link" id="link" placeholder="请输入内容" class="layui-textarea">0.74 odN:/ 复制打开抖音，看看【饭思思的作品】# salt 艾瑞巴蒂嗨起来 https://v.douyin.com/6W4jytR/</textarea>
-                            </div>
-                        </div>
-                        <input type="text" name="downloadurl" style="display: none;">
-                        <input type="text" name="filename" style="display: none;">
-                        <div class="layui-form-item center">
-                        <button class="layui-btn" lay-submit="" lay-filter="Submit">提交</button>
-                        <button class="layui-btn" lay-submit="" lay-filter="Remove">再来一个</button>
-                        <button class="layui-btn" lay-submit="" id="download" style="display: none;" lay-filter="Download">下载</button>
-                        </div>
-                    </form>
-                </div>
-                <div id="Result" style="display: none;">
-                    <div class="layui-card-header">解析结果</div>
-                    <div class="layui-card-body">
-                        <div class="layui-field-box">
-                            <div style="margin-top: 0px;">
-                            <p><span class="layui-badge">uid</span> <span id="uid"></span></p>
-                            <p><span class="layui-badge">author</span> <span id="author"></span></p>
-                            <p><span class="layui-badge">create_time</span> <span id="create_time"></span></p>
-                            <p><span class="layui-badge">desc</span> <span id="desc"></span></p>
-                            <p><span class="layui-badge">video_id</span> <span id="video_id"></span></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-<script>
-var content = navigator.clipboard.readText();
-console.log(content);
-layui.use(['form'], function(){
-    var form = layui.form
-    ,$ = layui.jquery
-    ,layer = layui.layer;
-     
-    form.on('submit(Submit)', function(data){
-        var link = data.field.link;
-        if(link.length == 0){
-            layer.alert('请输入您要解析的内容！', { title: '提示' })
-            return false;
-        }
-        var i = link.lastIndexOf("https://");
-        i = i === -1 ? link.lastIndexOf("http://") : i;
-        var url = link.substr(i);
-        var index = layer.load(0, {shade: false});
-        $.ajax({
-            type: 'GET',  
-            url: 'https://api.shejiz.cn/dy/' + url,
-            success: function(s) {
-                if(s.code === 0){
-                    var filename = s.data.nickname + '_' + s.data.itemId;
-                    var videourl = s.data.playAddr;
-                    $('#author').html(s.data.nickname);
-                    $('#uid').html(s.data.uid);
-                    $('#create_time').html(s.data.createTime);
-                    $('#desc').html(s.data.desc);
-                    $('#video_id').html(s.data.video_id);
-                    $('#title').html(filename);
-                    $('#download').show();
-                    $('#Result').show();
-                    $('#vice').show();
-                    downloadBlobFile('get',videourl).onreadystatechange = res=>{
-                        if(res.currentTarget.readyState == 4 &&  res.currentTarget.status==200){
-                            const url = window.URL.createObjectURL(res.currentTarget.response);
-                            $('#video').attr('src',url);$('#player').show();
-                            $("input[name=downloadurl]").val(url);
-                        }
-                    }
-                    $("input[name=filename]").val(filename);
-                    document.title = filename;                    
-                }else{
-                    layer.msg(s.message);
-                }
-                layer.close(index);
-            }
-        });
-        return false;
-    });
-    form.on('submit(Remove)', function(data){
-        $("#Result").hide();
-        $("#link").val('');
-        $('#video').attr('src','');
-        $('#download').hide();
-        $('#player').hide();
-        $('#vice').hide();
-        return false;
-    });
-    form.on('submit(Download)', function(data){
-        downloadBlobFile('get',data.field.downloadurl).onreadystatechange = res=>{
-            if(res.currentTarget.readyState == 4 &&  res.currentTarget.status==200){
-                const url = window.URL.createObjectURL(res.currentTarget.response);
-                let a = document.createElement('a');
-                a.href=url;
-                a.download = data.field.filename;
-                a.click();
-            }
-        }
-        return false;
-    });    
-});
-function downloadBlobFile(_method,_url){
-    const request = new XMLHttpRequest();
-    request.open(_method,_url);
-    request.send();
-    request.responseType = 'blob';
-    return request;
+    <meta name="renderer" content="webkit" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>在线美女热舞</title>
+    <link rel="stylesheet" href="style.css">
+	<style>
+	body {margin:0;}
+	
+	ul {
+	  list-style-type: none;
+	  margin: 0;
+	  padding: 0;
+	  overflow: hidden;
+	  background-color: #FFFFCC;
+	  position: fixed;
+	  top: 0;
+	  width: 100%;
+	}
+	
+	li {
+	  float: left;
+	}
+	
+	li a {
+	  display: block;
+	  color: white;
+	  text-align: center;
+	  padding: 14px 16px;
+	  text-decoration: none;
+	}
+	
+	li a:hover:not(.active) {
+	  background-color: #FFC0CB;
+	}
+	
+	.active {
+	  background-color: #FFC0CB;
+	}
+	
+	</style>
+</head>  
+<?php
+
+
+function sxvip(){
+$list = file_get_contents('sxvip.dat');
+$myfile = fopen("sxvip.dat", "w");
+$sxvip = ($list+1);
+fwrite($myfile,"$sxvip");
+fclose($myfile);
+return $sxvip;
 }
+
+function slzxrs(){
+//首先你要有读写文件的权限，首次访问肯不显示，正常情况刷新即可
+$online_log = "slvip.dat"; //保存人数的文件到根目录,
+$timeout = 30;//30秒内没动则认为掉线
+$entries = file($online_log);
+$temp = array();
+for ($i=0;$i<count($entries);$i++){
+$entry = explode(",",trim($entries[$i]));
+if(($entry[0] != getenv('REMOTE_ADDR')) && ($entry[1] > time())) {
+array_push($temp,$entry[0].",".$entry[1]."\n"); //取出其他浏览者的信息,并去掉超时者,保存进$temp
+}}
+array_push($temp,getenv('REMOTE_ADDR').",".(time() + ($timeout))."\n"); //更新浏览者的时间
+$slzxrs = count($temp); //计算在线人数
+$entries = implode("",$temp);
+//写入文件
+$fp = fopen($online_log,"w");
+flock($fp,LOCK_EX); //flock() 不能在NFS以及其他的一些网络文件系统中正常工作
+fputs($fp,$entries);
+flock($fp,LOCK_UN);
+fclose($fp);
+// echo "观看人数：".$slzxrs."人";
+return $slzxrs;
+}
+
+?>  
+
+
+
+    <section id="main">
+        <video id="player" src="http://api.92fh.cam/api/mvsp?apiKey=b7c5108c7fdcdeb1c961e5f2353ff6b6" controls controlsList="nodownload" webkit-playsinline playsinline></video>
+    </section>
+
+<h6><center><p>当前在线：<?php echo slzxrs(); ?> 人_ 累计观看：<?php echo sxvip(); ?> 人</p></center></h6>
+
+<?php
+
+echo "共有23650个视频";
+
+
+?>
+    <section id="buttons">
+        <button id="switch">自动切换</button>
+        <button id="next">下一位</button>
+
+ 
+
+
+   </section>
+    <script>
+    
+    (function (window, document) {
+        
+        if (top != self) {
+            window.top.location.replace(self.location.href);
+        }
+        var get = function (id) {
+            return document.getElementById(id);
+        }
+        var bind = function (element, event, callback) {
+            return element.addEventListener(event, callback);
+        }
+        var auto = true;
+        var player = get('player');
+        var randomm = function () {
+            player.src = 'http://api.92fh.cam/api/mvsp?apiKey=b7c5108c7fdcdeb1c961e5f2353ff6b6';
+            player.play();
+        }
+        bind(get('next'), 'click', randomm);
+        bind(player, 'error', function () {
+            randomm();
+        });
+        bind(get('switch'), 'click', function () {
+            auto = !auto;
+            this.innerText = '自动: ' + (auto ? '开' : '关');
+        });
+        bind(player, 'ended', function () {
+            if (auto) randomm();
+        });
+    })(window, document);
+    </script>
+<script>
+    document.addEventListener('contextmenu', event => event.preventDefault());
+    document.addEventListener('keydown', event => {
+        if (event.keyCode == 123 || (event.ctrlKey && event.shiftKey && event.keyCode == 73)) {
+            event.preventDefault();
+        }
+    });
 </script>
 </body>
 </html>
