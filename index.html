@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文件压缩</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+    }
+
+    #compression-container {
+      text-align: center;
+      background-color: #fff;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+    }
+
+    input[type="file"] {
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 15px 30px;
+      background-color: #4169e1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #6495ed;
+    }
+
+    #compressed-file {
+      margin-top: 20px;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="compression-container">
+    <h1>文件压缩</h1>
+    <input type="file" id="file-input" accept=".txt, .pdf, .doc, .docx">
+    <button onclick="compressFile()">压缩</button>
+
+    <div id="compressed-file">
+      <h2>压缩后的文件：</h2>
+      <a id="download-link" download="compressed_file.zip"></a>
+    </div>
+  </div>
+
+  <script>
+    function compressFile() {
+      const fileInput = document.getElementById('file-input');
+      const compressedFileContainer = document.getElementById('compressed-file');
+      const downloadLink = document.getElementById('download-link');
+
+      // Check if a file is selected
+      if (fileInput.files.length > 0) {
+        const originalFile = fileInput.files[0];
+
+        // Simulate compression (in a real scenario, you would use a compression library)
+        const compressedContent = `This is a compressed version of ${originalFile.name}`;
+
+        // Create a Blob with the compressed content
+        const compressedBlob = new Blob([compressedContent], { type: 'application/zip' });
+
+        // Set up download link
+        downloadLink.href = URL.createObjectURL(compressedBlob);
+        downloadLink.textContent = '下载压缩文件';
+        compressedFileContainer.style.display = 'block';
+      } else {
+        alert('请选择一个文件进行压缩。');
+      }
+    }
+  </script>
+</body>
+</html>
